@@ -375,6 +375,7 @@ login(char *fullname, char **nicks, int nnicks, char *passwd)
 	if(fullname == nil)
 		fullname = "Acme User";
 
+	sendp(writechan, estrdup("CAP LS"));
 	if(passwd && usepass){
 		snprint(buf, sizeof buf, "PASS :%s", passwd);
 		sendp(writechan, estrdup(buf));
@@ -399,6 +400,61 @@ login(char *fullname, char **nicks, int nnicks, char *passwd)
 			if(strcmp(m->cmd, "001") == 0){
 				free(m);
 				goto Nickaccepted;
+			}
+			/* CAP LS :sasl ... */
+			if(irccistrcmp(m->cmd, "CAP") == 0
+				&& m->narg == 2
+				&& irccistrcmp(m->arg[0], "LS") == 0){
+				/* Check for SASL support */
+				char *cap = strtok(m->arg[1], " ");
+				while (cap) {
+					if (irccistrcmp(cap, "sasl") == 0) {
+						sendp(writechan , estrdup("CAP REQ :sasl"));
+						break;
+					}
+					cap = strtok(nil, " ");
+				}
+				free(m);
+				continue;
+			}
+			/* CAP ACK :sasl */
+			if(irccistrcmp(m->cmd, "CAP") == 0
+				&& m->narg == 2
+				&& irccistrcmp(m->arg[0], "ACK") == 0) {
+				strtok(m->arg[1], " "); /* Trailing space */
+				if (irccistrcmp(m->arg[1], "sasl") == 0) {
+					/* SASL EXTERNAL (TLS) */
+					sendp(writechan , estrdup("AUTHENTICATE PLAIN"));
+				}
+				free(m);
+				continue;
+			}
+			/* AUTHENTICATE + */
+			if(irccistrcmp(m->cmd, "AUTHENTICATE") == 0
+				&& m->narg == 1
+				&& irccistrcmp(m->arg[0], "+") == 0) {
+				char auth[512];
+				int n;
+
+				strcpy(buf, "AUTHENTICATE ");
+				strcpy(auth, nick);
+				strcpy(&auth[strlen(nick)+1], nick);
+				strcpy(&auth[strlen(nick)*2+2], passwd);
+				enc64(&buf[13], sizeof buf - 13, auth, strlen(nick)*2+strlen(passwd)+2);
+				sendp(writechan , estrdup(buf));
+				free(m);
+				continue;
+			}
+			if (m->cmdnum == 904) {
+				/* failed SASL */
+				free(m);
+				return -1;
+			}
+			if (m->cmdnum == 903) {
+				/* SASL succeeded */
+				sendp(writechan , estrdup("CAP END"));
+				free(m);
+				goto Saslsuccess;
 			}
 			if(m->cmdnum == 451){
 				/* from the failed USER command */
@@ -440,6 +496,8 @@ Nickaccepted:
 		}
 		free(m);
 	}
+
+Saslsuccess:
 
 	sendp(unsubchan, &sub);
 	return 0;
