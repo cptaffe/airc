@@ -423,7 +423,7 @@ login(char *fullname, char **nicks, int nnicks, char *passwd)
 				&& irccistrcmp(m->arg[0], "ACK") == 0) {
 				strtok(m->arg[1], " "); /* Trailing space */
 				if (irccistrcmp(m->arg[1], "sasl") == 0) {
-					/* SASL EXTERNAL (TLS) */
+					/* SASL PLAIN */
 					sendp(writechan , estrdup("AUTHENTICATE PLAIN"));
 				}
 				free(m);
@@ -436,6 +436,7 @@ login(char *fullname, char **nicks, int nnicks, char *passwd)
 				char auth[512];
 				int n;
 
+				/* AUTHENTICATE base64(nick\0nick\0passwd) */
 				strcpy(buf, "AUTHENTICATE ");
 				strcpy(auth, nick);
 				strcpy(&auth[strlen(nick)+1], nick);
