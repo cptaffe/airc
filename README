@@ -1,0 +1,39 @@
+Irc client for acme
+
+mk install
+
+Irc [-f fullname] [-n nick] [-s servername] [-p passwd] server
+  
+  You'll get a window named /irc/servername and it will try to log in.
+  You can specify multiple -n options to try multiple nicks until a good
+  one is found.  If you specify -p, the password is sent to nickserv in
+  an identify message.
+  
+  Once the login is done, the tag of /irc/servname will have List Chat
+  in it.  Executing List will list all the channels.  Executing List #foo
+  will list just channel #foo.
+  
+  Executing Chat #foo joins channel foo and creates a new window
+  /irc/servername/#foo.  Text typed at the end of the window is sent to foo.
+  Clicking Del leaves the channel.
+  
+  Executing Chat user opens a window /irc/servername/user for chatting
+  with user.  The behavior is the same as Chat #foo.  User chat windows
+  are opened automatically on incoming messages.
+  
+  Executing Whois user runs whois on the user, displaying the results in
+  /irc/servername and optionally in /irc/user, if that window exists.
+
+ircmux [-r] [-f fullname] [-a addr] [-j join]... [-l logdir] [-n nick]... [-p passwd] server
+
+  Ircmux is an irc multiplexor that allows multiple connections to
+  masquerade as a single one.  It dials the server and logs in just like
+  Irc, joins the given channels, and then announces on addr.  (If the -a
+  option is omitted, it does not announce at all.)  Connections on addr can
+  pretend to log in, but in reality they all appear as the one connection.
+  
+  The -l option specifies a logging directory.  If it is given, then all IRC
+  messages are logged in that directory in files named by their channels,
+  e.g., #plan9.
+  
+  
