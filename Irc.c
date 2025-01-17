@@ -447,7 +447,7 @@ login(char *fullname, char **nicks, int nnicks, char *passwd)
 				continue;
 			}
 			if (m->cmdnum == 904) {
-				/* failed SASL */
+				/* SASL failed */
 				free(m);
 				return -1;
 			}

@@ -3,7 +3,7 @@
 TARG=Irc ircmux
 
 OFILES=\
-	irc.$O\
+	Irc.$O\
 	list.$O\
 
 HFILES=irc.h
@@ -15,7 +15,7 @@ acme.$O airc.$O: acme.h
 
 tgz:V:
 	tar czf irc.tar.gz COPYRIGHT \
-		acme.[ch] irc.[ch] airc.c list.c Irc.c ircmux.c mkfile README
+		acme.[ch] irc.h airc.c list.c Irc.c ircmux.c mkfile README
 
 push:V:
 	mk tgz
