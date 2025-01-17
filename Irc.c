@@ -382,12 +382,6 @@ login(char *fullname, char **nicks, int nnicks, char *passwd)
 	}
 	snprint(buf, sizeof buf, "USER %s 0 * :%s", nicks[0], fullname);
 	sendp(writechan, estrdup(buf));
-	if(usepass){	/* assume talking to proxy */
-		sendp(writechan, estrdup("PATTACH Freenode"));
-		sendp(unsubchan, &sub);
-		nick = nicks[0];
-		return 0;
-	}
 	for(i=0; i<nnicks; i++){
 		nick = nicks[i];
 		snprint(buf, sizeof buf, "NICK %s", nick);
@@ -407,12 +401,17 @@ login(char *fullname, char **nicks, int nnicks, char *passwd)
 				&& irccistrcmp(m->arg[0], "LS") == 0){
 				/* Check for SASL support */
 				char *cap = strtok(m->arg[1], " ");
+				int found = 0;
 				while (cap) {
 					if (irccistrcmp(cap, "sasl") == 0) {
+					    found = 1;
 						sendp(writechan , estrdup("CAP REQ :sasl"));
 						break;
 					}
 					cap = strtok(nil, " ");
+				}
+				if (!found) {
+					sendp(writechan , estrdup("CAP END"));
 				}
 				free(m);
 				continue;
@@ -421,8 +420,9 @@ login(char *fullname, char **nicks, int nnicks, char *passwd)
 			if(irccistrcmp(m->cmd, "CAP") == 0
 				&& m->narg == 2
 				&& irccistrcmp(m->arg[0], "ACK") == 0) {
-				strtok(m->arg[1], " "); /* Trailing space */
-				if (irccistrcmp(m->arg[1], "sasl") == 0) {
+				sendp(writechan , estrdup("CAP END"));
+				char *cap = strtok(m->arg[1], " "); /* Trailing space */
+				if (irccistrcmp(cap, "sasl") == 0) {
 					/* SASL PLAIN */
 					sendp(writechan , estrdup("AUTHENTICATE PLAIN"));
 				}
