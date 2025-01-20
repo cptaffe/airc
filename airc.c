@@ -483,6 +483,9 @@ chatwin(void *v)
 			case RPL_TOPIC:
 			case RPL_OWNERTIME:
 			case RPL_LIST:
+			case RPL_ENDOFBANLIST:
+			case RPL_CHANNELMODEIS:
+			case RPL_CREATIONTIME:
 			case ERR_NOCHANMODES:
 				break;
 			case RPL_WHOISUSER:
@@ -528,12 +531,12 @@ chatwin(void *v)
 						m->src, m->dst);
 					break;
 				}
-				if(irccistrcmp(m->cmd, "PRIVMSG") == 0
-				|| irccistrcmp(m->cmd, "NOTICE") == 0){
-					if(irccistrcmp(m->cmd, "PRIVMSG") == 0)
-						winprint(w, "data", "<%s> %s\n", m->src, m->arg[0]);
-					else
-						winprint(w, "data", "[%s] %s\n", m->src, m->arg[0]);
+				if(irccistrcmp(m->cmd, "PRIVMSG") == 0){
+					winprint(w, "data", "<%s> %s\n", m->src, m->arg[0]);
+					break;
+				}
+				if(irccistrcmp(m->cmd, "NOTICE") == 0){
+					winprint(w, "data", "[%s] %s\n", m->src, m->arg[0]);
 					break;
 				}
 				winprint(w, "data", "unexpected msg: %M\n", m);

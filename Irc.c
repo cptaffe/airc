@@ -988,7 +988,14 @@ ichanthread(void *v)
 				ic->_inwho = 0;
 				sortwho(ic);
 				handled = 0;
-			}	
+			}
+			if(m->cmdnum == RPL_BANLIST){
+				/* TODO: accumulate ban list */
+				handled = 1;
+			}
+			if(m->cmdnum == RPL_ENDOFBANLIST){
+				handled = 0;	/* send to chatter */
+			}
 		}
 		if(!handled)
 			listput(ic->chatter, m);
